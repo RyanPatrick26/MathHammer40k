@@ -2,8 +2,8 @@ package com.ryanpatrick.mathhammer40k
 
 import android.content.Context
 import androidx.room.Room
-import com.ryanpatrick.mathhammer40k.data.ProfileDatabase
-import com.ryanpatrick.mathhammer40k.data.ProfileRepository
+import com.ryanpatrick.mathhammer40k.room.ProfileDatabase
+import com.ryanpatrick.mathhammer40k.room.ProfileRepository
 
 object Graph {
     lateinit var database: ProfileDatabase

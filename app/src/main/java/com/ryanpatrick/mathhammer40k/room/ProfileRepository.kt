@@ -1,5 +1,6 @@
-package com.ryanpatrick.mathhammer40k.data
+package com.ryanpatrick.mathhammer40k.room
 
+import com.ryanpatrick.mathhammer40k.data.Profile
 import kotlinx.coroutines.flow.Flow
 
 class ProfileRepository(private val profileDao: ProfileDao) {

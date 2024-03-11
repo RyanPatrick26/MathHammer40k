@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ryanpatrick.mathhammer40k.Graph
 import com.ryanpatrick.mathhammer40k.data.Profile
-import com.ryanpatrick.mathhammer40k.data.ProfileRepository
+import com.ryanpatrick.mathhammer40k.room.ProfileRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch

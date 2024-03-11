@@ -15,5 +15,6 @@ data class Profile(
     @ColumnInfo("save") val save: Int?,
     @ColumnInfo("invulnerable") val invulnerable: Int?,
     @ColumnInfo("feel_no_pain") val feelNoPain: Int?,
-    @ColumnInfo("keywords") val keywords: List<Keywords>?
+    @ColumnInfo("keywords") val keywords: List<Keywords>?,
+    @ColumnInfo("roles") val roles: List<Roles>
 )
