@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ryanpatrick.mathhammer40k.data.Ability
+import com.ryanpatrick.mathhammer40k.data.intercessorWeapons
+import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
 
 @Composable
 fun SimulatorScreen(){
@@ -72,7 +77,88 @@ fun SimulatorScreen(){
                         }
                     }
                     Text("Attacker")
-                    WeaponsListItem(abilitiesList = listOf(Ability("Abilities", "")))
+                    for(weapon in intercessorWeapons){
+                        WeaponsListItem(weapon.name, weapon.numPerUnit, weapon.attacks, weapon.toHit,
+                            weapon.strength, weapon.ap, weapon.damage, weapon.abilities)
+                    }
+                }
+            }
+        }
+        //endregion
+
+        //region defender
+        var isDefenderExpanded by remember { mutableStateOf(true) }
+        var keywordsString = ""
+        if(spaceMarineEquivalent.keywords.size == 1){
+            keywordsString = spaceMarineEquivalent.keywords[0].title
+        }
+        else{
+            for(keyword in spaceMarineEquivalent.keywords){
+                if(spaceMarineEquivalent.keywords.last() == keyword){
+                    keywordsString += keyword.title
+                }
+                else{
+                    keywordsString += "${keyword.title}, "
+                }
+            }
+        }
+        Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
+            .clickable { isDefenderExpanded = !isDefenderExpanded },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally){
+            ExpandableSectionTitle(isExpanded = isDefenderExpanded, title = "Defender")
+            AnimatedVisibility(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxWidth().padding(8.dp), visible = isDefenderExpanded){
+                Column{
+                    Row{
+                        Button(onClick = {}, contentPadding = PaddingValues(4.dp),
+                            modifier = Modifier.padding(4.dp)){
+                            Text("Saved Profiles", fontSize = 12.sp)
+                        }
+                        Button(onClick = {}, contentPadding = PaddingValues(4.dp),
+                            modifier = Modifier.padding(4.dp)){
+                            Text("Edit Profile", fontSize = 12.sp)
+                        }
+                    }
+                    Text(spaceMarineEquivalent.profileName)
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween){
+                        Column(modifier = Modifier.fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(text = "Models", fontSize = 12.sp)
+                            Text("${spaceMarineEquivalent.modelCount}", fontSize = 12.sp)
+                        }
+                        Column(modifier = Modifier.fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(text = "Toughness", fontSize = 12.sp)
+                            Text("${spaceMarineEquivalent.toughness}", fontSize = 12.sp)
+                        }
+                        Column(modifier = Modifier.fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(text = "Wounds", fontSize = 12.sp)
+                            Text("${spaceMarineEquivalent.wounds}", fontSize = 12.sp)
+                        }
+                        Column(modifier = Modifier.fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally){
+                            Text(text = "Save", fontSize = 12.sp)
+                            Text("${spaceMarineEquivalent.save}+", fontSize = 12.sp)
+                        }
+                        if(spaceMarineEquivalent.invulnerable > 0){
+                            Column(modifier = Modifier.fillMaxHeight(),
+                                horizontalAlignment = Alignment.CenterHorizontally){
+                                Text(text = "Invul Save", fontSize = 12.sp)
+                                Text("${spaceMarineEquivalent.invulnerable}+", fontSize = 12.sp)
+                            }
+                        }
+                        if(spaceMarineEquivalent.feelNoPain > 0){
+                            Column(modifier = Modifier.fillMaxHeight(),
+                                horizontalAlignment = Alignment.CenterHorizontally){
+                                Text(text = "Feel no Pain", fontSize = 12.sp)
+                                Text("${spaceMarineEquivalent.feelNoPain}+", fontSize = 12.sp)
+                            }
+                        }
+                    }
+                    Text("Keywords: $keywordsString")
                 }
             }
         }
@@ -94,9 +180,10 @@ fun ExpandableSectionTitle(modifier: Modifier = Modifier, isExpanded: Boolean, t
 }
 
 @Composable
-fun WeaponsListItem(name: String = "Weapon", count: Int = -1, attacks: String = "Attacks", strength: Int = -1,
-                    ap: Int = -1, damage: String = "Damage", abilitiesList: List<Ability>){
+fun WeaponsListItem(name: String, count: Int, attacks: String, toHit: Int,
+                    strength: Int, ap: Int, damage: String, abilitiesList: List<Ability>){
     var abilitiesString = ""
+    val fontSize = 12.sp
 
     if(abilitiesList.count() == 1){
         abilitiesString = abilitiesList[0].name
@@ -107,17 +194,40 @@ fun WeaponsListItem(name: String = "Weapon", count: Int = -1, attacks: String = 
         }
     }
 
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly){
-        val fontSize = 12.sp
-        Text(name, fontSize = fontSize)
-        Text(text = if(count < 0) "Count" else "$count", fontSize = fontSize)
-        Text(attacks, fontSize = fontSize)
-        Text(text = if(strength < 0) "Strength" else "$strength", fontSize = fontSize)
-        Text(text = if(ap < 0) "AP" else "$ap", fontSize = fontSize)
-        Text(damage, fontSize = fontSize)
-        Text(abilitiesString, fontSize = fontSize)
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)){
+        Text(name)
+        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly){
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "Count", fontSize = fontSize)
+                Text(text = "$count", fontSize = fontSize)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "Attacks", fontSize = fontSize)
+                Text(text = attacks, fontSize = fontSize)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "To Hit", fontSize = fontSize)
+                Text(text = "$toHit+", fontSize = fontSize)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "Strength", fontSize = fontSize)
+                Text(text = "$strength", fontSize = fontSize)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "AP", fontSize = fontSize)
+                Text(text = if(ap == 0) "$ap" else "-$ap", fontSize = fontSize)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally){
+                Text(text = "Damage", fontSize = fontSize)
+                Text(damage, fontSize = fontSize)
+            }
+        }
+        if(abilitiesList.isNotEmpty()){
+            Text("Abilities: $abilitiesString")
+        }
     }
+
 }
 
 @Preview(showBackground = true)
