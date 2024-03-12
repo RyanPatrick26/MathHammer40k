@@ -17,7 +17,6 @@ import com.ryanpatrick.mathhammer40k.ui.theme.MathHammer40kTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val navController = rememberNavController()
         setContent {
             MathHammer40kTheme {
                 // A surface container using the 'background' color from the theme
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavGraph(navController)
+                    NavGraph()
                 }
             }
         }

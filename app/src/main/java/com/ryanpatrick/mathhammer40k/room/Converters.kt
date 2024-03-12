@@ -8,7 +8,6 @@ import com.ryanpatrick.mathhammer40k.data.Keywords
 import com.ryanpatrick.mathhammer40k.data.Roles
 import com.ryanpatrick.mathhammer40k.data.Weapon
 
-@ProvidedTypeConverter
 class Converters {
     @TypeConverter
     fun fromStringToWeaponList(string: String): List<Weapon>{
@@ -33,7 +32,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromStringToRolesList(string: String): List<Keywords>{
+    fun fromStringToRolesList(string: String): List<Roles>{
         val listType = object : TypeToken<List<Roles?>?>() {}.type
         return Gson().fromJson(string, listType)
     }
