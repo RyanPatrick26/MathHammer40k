@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -94,12 +92,9 @@ fun SimulatorScreen(){
         }
         else{
             for(keyword in spaceMarineEquivalent.keywords){
-                if(spaceMarineEquivalent.keywords.last() == keyword){
-                    keywordsString += keyword.title
-                }
-                else{
-                    keywordsString += "${keyword.title}, "
-                }
+                keywordsString += if(spaceMarineEquivalent.keywords.last() == keyword)
+                    keyword.title else "${keyword.title}, "
+
             }
         }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
