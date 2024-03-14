@@ -16,18 +16,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
-import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
+
 @Composable
-fun ManageProfilesScreen(/*profileViewModel: ProfileViewModel*/){
+fun ProfilesListScreen(/*profileViewModel: ProfileViewModel*/){
     //val profilesList = profileViewModel.getAllProfiles.collectAsState(initial = listOf())
     val profilesList = listOf(spaceMarineEquivalent)
     Column(modifier = Modifier.fillMaxSize()){
@@ -81,5 +79,5 @@ fun ProfileItem(profile: Profile){
 @Preview(showBackground = true)
 @Composable
 fun ManageProfilesPreview(){
-    ManageProfilesScreen()
+    ProfilesListScreen()
 }

@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun CreateProfileScreen(){
+fun ManageProfileScreen(){
 
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CreateProfilePreview(){
-    CreateProfileScreen()
+fun ManageProfilePreview(){
+    ManageProfileScreen()
 }

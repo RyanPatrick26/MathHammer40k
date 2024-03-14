@@ -11,17 +11,16 @@ import com.ryanpatrick.mathhammer40k.Screens
 import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
 @Composable
-fun NavGraph(profileViewModel: ProfileViewModel = viewModel()){
-    val navController: NavHostController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screens.ManageProfilesScreen.route){
+fun NavGraph(navController: NavController, profileViewModel: ProfileViewModel = viewModel()){
+    NavHost(navController = navController as NavHostController, startDestination = Screens.SimScreen.route){
         composable(Screens.SimScreen.route){
             SimulatorScreen()
         }
-        composable(Screens.ManageProfilesScreen.route){
-            ManageProfilesScreen()
+        composable(Screens.ProfilesListScreen.route){
+            ProfilesListScreen()
         }
-        composable(Screens.CreateProfileScreen.route){
-            CreateProfileScreen()
+        composable(Screens.ManageProfileScreen.route){
+            ManageProfileScreen()
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.ryanpatrick.mathhammer40k.composables.MainScaffold
 import com.ryanpatrick.mathhammer40k.composables.NavGraph
 import com.ryanpatrick.mathhammer40k.ui.theme.MathHammer40kTheme
 
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavGraph()
+                    MainScaffold()
                 }
             }
         }
