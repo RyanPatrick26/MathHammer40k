@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -60,20 +62,26 @@ fun ProfileItem(profile: Profile){
             }
         }
     }
-    Row(modifier = Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically){
-        Text(text = profile.profileName, fontSize = 12.sp, modifier = Modifier.weight(0.75f))
-        Text(text = rolesString, fontSize = 12.sp, modifier = Modifier.weight(1f))
-        Row(modifier = Modifier.weight(0.75f), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End){
-            IconButton(onClick = {}){
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-            }
-            IconButton(onClick = {}){
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+    Card(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 8.dp, end = 8.dp),
+        elevation = CardDefaults.cardElevation(10.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically){
+            Text(text = profile.profileName, fontSize = 12.sp, modifier = Modifier.weight(0.75f))
+            Text(text = rolesString, fontSize = 12.sp, modifier = Modifier.weight(1f))
+            Row(modifier = Modifier.weight(0.75f), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End){
+                IconButton(onClick = {}){
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                }
+                IconButton(onClick = {}){
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                }
             }
         }
     }
+
+
+
 }
 
 @Preview(showBackground = true)

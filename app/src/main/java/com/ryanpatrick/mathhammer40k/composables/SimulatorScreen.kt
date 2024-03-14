@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ryanpatrick.mathhammer40k.data.Ability
+import com.ryanpatrick.mathhammer40k.data.Weapon
 import com.ryanpatrick.mathhammer40k.data.intercessorWeapons
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
 
@@ -76,8 +77,7 @@ fun SimulatorScreen(){
                     }
                     Text("Attacker")
                     for(weapon in intercessorWeapons){
-                        WeaponsListItem(weapon.name, weapon.numPerUnit, weapon.attacks, weapon.toHit,
-                            weapon.strength, weapon.ap, weapon.damage, weapon.abilities)
+                        WeaponsListItem(weapon)
                     }
                 }
             }
@@ -175,50 +175,50 @@ fun ExpandableSectionTitle(modifier: Modifier = Modifier, isExpanded: Boolean, t
 }
 
 @Composable
-fun WeaponsListItem(name: String, count: Int, attacks: String, toHit: Int,
-                    strength: Int, ap: Int, damage: String, abilitiesList: List<Ability>){
+fun WeaponsListItem(weapon: Weapon){
     var abilitiesString = ""
     val fontSize = 12.sp
 
-    if(abilitiesList.count() == 1){
-        abilitiesString = abilitiesList[0].name
+    if(weapon.abilities.count() == 1){
+        abilitiesString = weapon.abilities[0].name
     }
     else{
-        for (ability in abilitiesList){
+        for (ability in weapon.abilities){
             abilitiesString += ability.name + ",\n"
         }
     }
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)){
-        Text(name)
+        Text(weapon.name)
         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly){
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "Count", fontSize = fontSize)
-                Text(text = "$count", fontSize = fontSize)
+                Text(text = "${weapon.numPerUnit}", fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "Attacks", fontSize = fontSize)
-                Text(text = attacks, fontSize = fontSize)
+                Text(text = weapon.numAttacks, fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "To Hit", fontSize = fontSize)
-                Text(text = "$toHit+", fontSize = fontSize)
+                Text(text = "${weapon.attack.toHit}+", fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "Strength", fontSize = fontSize)
-                Text(text = "$strength", fontSize = fontSize)
+                Text(text = "${weapon.attack.strength}", fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "AP", fontSize = fontSize)
-                Text(text = if(ap == 0) "$ap" else "-$ap", fontSize = fontSize)
+                Text(text = if(weapon.attack.ap == 0) "${weapon.attack.ap}"
+                            else "-${weapon.attack.ap}", fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "Damage", fontSize = fontSize)
-                Text(damage, fontSize = fontSize)
+                Text(weapon.attack.damage, fontSize = fontSize)
             }
         }
-        if(abilitiesList.isNotEmpty()){
+        if(weapon.abilities.isNotEmpty()){
             Text("Abilities: $abilitiesString")
         }
     }
