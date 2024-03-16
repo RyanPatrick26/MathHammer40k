@@ -5,8 +5,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.ryanpatrick.mathhammer40k.Screens
 import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
@@ -20,7 +22,7 @@ fun NavGraph(navController: NavController, profileViewModel: ProfileViewModel = 
             ProfilesListScreen()
         }
         composable(Screens.ManageProfileScreen.route){
-            ManageProfileScreen()
+            ManageProfileScreen(0, profileViewModel)
         }
     }
 }
