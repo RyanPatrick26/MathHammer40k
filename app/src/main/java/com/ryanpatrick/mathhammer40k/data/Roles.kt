@@ -1,7 +1,13 @@
 package com.ryanpatrick.mathhammer40k.data
 
-sealed class Roles(val name: String) {
-    object meleeAttacker: Roles("Attacker: Melee")
-    object rangedAttacker: Roles("Attacker: Ranged")
-    object defender: Roles("Defender")
+enum class Roles{
+    MELEE, RANGED, DEFENDER
+}
+
+val Roles.title: String get(){
+    return when(this){
+        Roles.MELEE -> "Attacker: Melee"
+        Roles.RANGED -> "Attacker: Ranged"
+        Roles.DEFENDER -> "Defender"
+    }
 }

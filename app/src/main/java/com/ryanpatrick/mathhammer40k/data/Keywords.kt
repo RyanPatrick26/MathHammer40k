@@ -1,12 +1,17 @@
 package com.ryanpatrick.mathhammer40k.data
 
-sealed  class Keywords(val name: String, val title: String){
-    object Infantry: Keywords("infantry", "INFANTRY")
-    object Vehicle: Keywords("vehicle", "VEHICLE")
-    object Character: Keywords("character", "CHARACTER")
-    object Walker: Keywords("walker", "WALKER")
-    object Psyker: Keywords("psyker", "PSYKER")
-    object Daemon: Keywords("daemon", "DAEMON")
-    object Fly: Keywords("fly", "FLY")
-    object Monster: Keywords("monster", "MONSTER")
+enum class Keywords{
+    INFANTRY, VEHICLE, CHARACTER, WALKER, PSYKER, DAEMON, FLY, MONSTER
+}
+val Keywords.title: String get(){
+    return when(this){
+        Keywords.INFANTRY -> "INFANTRY"
+        Keywords.VEHICLE -> "VEHICLE"
+        Keywords.CHARACTER -> "CHARACTER"
+        Keywords.WALKER -> "WALKER"
+        Keywords.PSYKER -> "PSYKER"
+        Keywords.DAEMON -> "DAEMON"
+        Keywords.FLY -> "FLY"
+        Keywords.MONSTER -> "MONSTER"
+    }
 }

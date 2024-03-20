@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Profile(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     @ColumnInfo("profile_name") val profileName: String,
-    @ColumnInfo("weapons") val weapons: List<Weapon>?,
+    @ColumnInfo("weapons") val weapons: List<Weapon>,
     @ColumnInfo("model_count") val modelCount: Int?,
     @ColumnInfo("toughness") val toughness: Int?,
     @ColumnInfo("wounds") val wounds: Int?,

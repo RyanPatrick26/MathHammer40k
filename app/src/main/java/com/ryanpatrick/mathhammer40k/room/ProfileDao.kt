@@ -25,5 +25,4 @@ abstract class ProfileDao {
 
     @Query("SELECT * FROM `profile_table` WHERE id = :id")
     abstract fun getProfileById(id: Long): Flow<Profile>
-
 }
