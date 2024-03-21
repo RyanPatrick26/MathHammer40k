@@ -1,6 +1,5 @@
 package com.ryanpatrick.mathhammer40k.composables
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.ryanpatrick.mathhammer40k.Screens
 import com.ryanpatrick.mathhammer40k.appScreens
 import com.ryanpatrick.mathhammer40k.viewmodel.NavViewModel
 
@@ -40,7 +40,7 @@ fun MainScaffold(){
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {TopBar(title.value)},
         bottomBar = {BottomBar(controller, currentRoute, navViewModel, title)}){
         Column(modifier = Modifier.padding(it)){
-            NavGraph(controller)
+            NavGraph(controller, title = title)
         }
     }
 }
@@ -61,8 +61,13 @@ fun BottomBar(controller: NavHostController, route: String?, navViewModel: NavVi
             item ->
             NavigationBarItem(selected = route == item.route,
                 onClick = {
-                    title.value = item.title
-                    controller.navigate(item.route)
+                    //title.value = item.title
+                    if(item.route == Screens.ManageProfileScreen.route){
+                        controller.navigate(item.route + "/0L")
+                    }
+                    else {
+                        controller.navigate(item.route)
+                    }
                 },
                 icon = {Icon(imageVector = item.icon, contentDescription = item.title)},
                 label = {Text(text = item.title)})

@@ -7,7 +7,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ryanpatrick.mathhammer40k.data.Profile
+import com.ryanpatrick.mathhammer40k.data.guardsmanEquivalent
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
+import com.ryanpatrick.mathhammer40k.data.terminatorEquivalent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -40,6 +42,8 @@ abstract class ProfileDatabase: RoomDatabase(){
 
         suspend fun populateDatabase(profileDao: ProfileDao){
             profileDao.insertProfile(spaceMarineEquivalent)
+            profileDao.insertProfile(guardsmanEquivalent)
+            profileDao.insertProfile(terminatorEquivalent)
         }
     }
 }

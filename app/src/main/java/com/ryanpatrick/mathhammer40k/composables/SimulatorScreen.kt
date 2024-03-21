@@ -33,10 +33,10 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ryanpatrick.mathhammer40k.data.Ability
 import com.ryanpatrick.mathhammer40k.data.Weapon
 import com.ryanpatrick.mathhammer40k.data.intercessorWeapons
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
+import com.ryanpatrick.mathhammer40k.data.title
 
 @Composable
 fun SimulatorScreen(){
@@ -77,7 +77,7 @@ fun SimulatorScreen(){
                     }
                     Text("Attacker")
                     for(weapon in intercessorWeapons){
-                        WeaponsListItem(weapon)
+                        SimulatorWeaponsListItem(weapon)
                     }
                 }
             }
@@ -175,16 +175,16 @@ fun ExpandableSectionTitle(modifier: Modifier = Modifier, isExpanded: Boolean, t
 }
 
 @Composable
-fun WeaponsListItem(weapon: Weapon){
+fun SimulatorWeaponsListItem(weapon: Weapon){
     var abilitiesString = ""
     val fontSize = 12.sp
 
     if(weapon.abilities.count() == 1){
-        abilitiesString = weapon.abilities[0].name
+        abilitiesString = weapon.abilities[0].title
     }
     else{
         for (ability in weapon.abilities){
-            abilitiesString += ability.name + ",\n"
+            abilitiesString += ability.title + ",\n"
         }
     }
 
@@ -222,7 +222,6 @@ fun WeaponsListItem(weapon: Weapon){
             Text("Abilities: $abilitiesString")
         }
     }
-
 }
 
 @Preview(showBackground = true)

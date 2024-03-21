@@ -1,5 +1,6 @@
 package com.ryanpatrick.mathhammer40k.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,18 +19,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.ryanpatrick.mathhammer40k.Screens
 import com.ryanpatrick.mathhammer40k.data.Profile
-import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
+import com.ryanpatrick.mathhammer40k.data.title
+import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfilesListScreen(/*profileViewModel: ProfileViewModel*/){
-    //val profilesList = profileViewModel.getAllProfiles.collectAsState(initial = listOf())
-    val profilesList = listOf(spaceMarineEquivalent)
+fun ProfilesListScreen(profileViewModel: ProfileViewModel, controller: NavHostController){
+    val profilesList = profileViewModel.getAllProfiles.collectAsState(initial = listOf())
+    //val profilesList = listOf(spaceMarineEquivalent)
     Column(modifier = Modifier.fillMaxSize()){
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween){
@@ -38,27 +42,26 @@ fun ProfilesListScreen(/*profileViewModel: ProfileViewModel*/){
             Spacer(modifier = Modifier.weight(0.75f))
         }
         LazyColumn {
-            items(profilesList){profile ->
-                ProfileItem(profile)
+            items(profilesList.value){profile ->
+                ProfileItem(profile, controller)
             }
         }
     }
-
 }
 
 @Composable
-fun ProfileItem(profile: Profile){
+fun ProfileItem(profile: Profile, controller: NavHostController){
     var rolesString = ""
     if(profile.roles.count() == 1){
-        rolesString = profile.roles[0].name
+        rolesString = profile.roles[0].title
     }
     else{
         for(role in profile.roles){
             if(profile.roles.last() == role){
-                rolesString += role.name
+                rolesString += role.title
             }
             else{
-                rolesString += "${role.name}, "
+                rolesString += "${role.title}, "
             }
         }
     }
@@ -70,7 +73,7 @@ fun ProfileItem(profile: Profile){
             Text(text = rolesString, fontSize = 12.sp, modifier = Modifier.weight(1f))
             Row(modifier = Modifier.weight(0.75f), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End){
-                IconButton(onClick = {}){
+                IconButton(onClick = {controller.navigate(Screens.ManageProfileScreen.route + "/${profile.id}")}){
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
                 }
                 IconButton(onClick = {}){
@@ -82,10 +85,4 @@ fun ProfileItem(profile: Profile){
 
 
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ManageProfilesPreview(){
-    ProfilesListScreen()
 }
