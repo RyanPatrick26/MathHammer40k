@@ -20,7 +20,7 @@ fun NavGraph(navController: NavController, profileViewModel: ProfileViewModel = 
     NavHost(navController = navController as NavHostController, startDestination = Screens.SimScreen.route){
         composable(Screens.SimScreen.route){
             title.value = Screens.SimScreen.title
-            SimulatorScreen()
+            SimulatorScreen(profileViewModel)
         }
         composable(Screens.ProfilesListScreen.route){
             title.value = Screens.ProfilesListScreen.title

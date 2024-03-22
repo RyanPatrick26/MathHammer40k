@@ -1,5 +1,6 @@
 package com.ryanpatrick.mathhammer40k.composables
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,10 +20,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,20 +38,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
-import com.ryanpatrick.mathhammer40k.data.intercessorWeapons
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
 import com.ryanpatrick.mathhammer40k.data.title
+import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimulatorScreen(){
+fun SimulatorScreen(profileViewModel: ProfileViewModel){
     Column(modifier = Modifier.fillMaxSize().padding(8.dp).verticalScroll(rememberScrollState(), enabled = true),
         horizontalAlignment = Alignment.CenterHorizontally){
+        val allProfiles = profileViewModel.getAllProfiles.collectAsState(listOf())
+        val attackerProfile = remember{mutableStateOf(Profile(0, "", listOf(),
+            keywords = listOf(), roles = listOf()))}
+        val defenderProfile = remember{mutableStateOf(Profile(0, "", listOf(),
+            keywords = listOf(), roles = listOf()))}
+
+        val showAttackerDialog = remember{mutableStateOf(false)}
+        val showDefenderDialog = remember{mutableStateOf(false)}
+
+        val attackerDropdownExpanded = remember{mutableStateOf(false)}
+        val defenderDropdownExpanded = remember{mutableStateOf(false)}
+
+        var selectedProfile: Profile
+
+
+
         //region attacker
         var isAttackerExpanded by remember{ mutableStateOf(true) }
+        if(attackerProfile.value.id == 0L){
+            attackerProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
+                keywords = listOf(), roles = listOf())).value
+        }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
             .clickable { isAttackerExpanded = !isAttackerExpanded },
             verticalArrangement = Arrangement.Center,
@@ -55,13 +84,9 @@ fun SimulatorScreen(){
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween){
                         Row{
-                            Button(onClick = {}, contentPadding = PaddingValues(4.dp),
+                            Button(onClick = { showAttackerDialog.value = true }, contentPadding = PaddingValues(4.dp),
                                 modifier = Modifier.padding(4.dp)){
-                                Text("Saved Profiles", fontSize = 12.sp)
-                            }
-                            Button(onClick = {}, contentPadding = PaddingValues(4.dp),
-                                modifier = Modifier.padding(4.dp)){
-                                Text("Edit Profile", fontSize = 12.sp)
+                                Text("Select Profile", fontSize = 12.sp)
                             }
                         }
                         Row{
@@ -75,24 +100,66 @@ fun SimulatorScreen(){
                             }
                         }
                     }
-                    Text("Attacker")
-                    for(weapon in intercessorWeapons){
+                    Text(attackerProfile.value.profileName)
+                    for(weapon in attackerProfile.value.weapons){
                         SimulatorWeaponsListItem(weapon)
                     }
                 }
             }
         }
+
+        //select attacker dialog
+        if(showAttackerDialog.value){
+            selectedProfile = attackerProfile.value
+            AlertDialog(onDismissRequest = {},
+                confirmButton = {Row(modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(onClick = {
+                        attackerProfile.value = selectedProfile.copy()
+                        Log.i("Simulator", attackerProfile.value.toString())
+                        showAttackerDialog.value = false
+                    }){
+                        Text(text = "Confirm")
+                    }
+                    Button(onClick = { showAttackerDialog.value = false }){
+                        Text(text = "Cancel")
+                    }
+                }},
+                title = {Text("Select Attacker")},
+                text = {
+                    ExposedDropdownMenuBox(expanded = attackerDropdownExpanded.value,
+                        onExpandedChange = {attackerDropdownExpanded.value = !attackerDropdownExpanded.value}){
+                        TextField(value = selectedProfile.profileName, onValueChange = {}, readOnly = true, modifier = Modifier.menuAnchor(),
+                            trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(attackerDropdownExpanded.value)})
+                        ExposedDropdownMenu(expanded = attackerDropdownExpanded.value, onDismissRequest = {attackerDropdownExpanded.value = false}){
+                            allProfiles.value.forEach{profile->
+                                DropdownMenuItem(text = {Text(profile.profileName)},
+                                    onClick = {
+                                        selectedProfile = profile
+                                        attackerDropdownExpanded.value = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
         //endregion
 
         //region defender
+        if(defenderProfile.value.id == 0L){
+            defenderProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
+                keywords = listOf(), roles = listOf())).value
+        }
         var isDefenderExpanded by remember { mutableStateOf(true) }
         var keywordsString = ""
-        if(spaceMarineEquivalent.keywords.size == 1){
-            keywordsString = spaceMarineEquivalent.keywords[0].title
+        if(defenderProfile.value.keywords.size == 1){
+            keywordsString = defenderProfile.value.keywords[0].title
         }
         else{
-            for(keyword in spaceMarineEquivalent.keywords){
-                keywordsString += if(spaceMarineEquivalent.keywords.last() == keyword)
+            for(keyword in defenderProfile.value.keywords){
+                keywordsString += if(defenderProfile.value.keywords.last() == keyword)
                     keyword.title else "${keyword.title}, "
 
             }
@@ -106,56 +173,88 @@ fun SimulatorScreen(){
                 .fillMaxWidth().padding(8.dp), visible = isDefenderExpanded){
                 Column{
                     Row{
-                        Button(onClick = {}, contentPadding = PaddingValues(4.dp),
+                        Button(onClick = {showDefenderDialog.value = true}, contentPadding = PaddingValues(4.dp),
                             modifier = Modifier.padding(4.dp)){
-                            Text("Saved Profiles", fontSize = 12.sp)
-                        }
-                        Button(onClick = {}, contentPadding = PaddingValues(4.dp),
-                            modifier = Modifier.padding(4.dp)){
-                            Text("Edit Profile", fontSize = 12.sp)
+                            Text("Select Profile", fontSize = 12.sp)
                         }
                     }
-                    Text(spaceMarineEquivalent.profileName)
+                    Text(defenderProfile.value.profileName)
                     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween){
                         Column(modifier = Modifier.fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally){
                             Text(text = "Models", fontSize = 12.sp)
-                            Text("${spaceMarineEquivalent.modelCount}", fontSize = 12.sp)
+                            Text("${defenderProfile.value.modelCount}", fontSize = 12.sp)
                         }
                         Column(modifier = Modifier.fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally){
                             Text(text = "Toughness", fontSize = 12.sp)
-                            Text("${spaceMarineEquivalent.toughness}", fontSize = 12.sp)
+                            Text("${defenderProfile.value.toughness}", fontSize = 12.sp)
                         }
                         Column(modifier = Modifier.fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally){
                             Text(text = "Wounds", fontSize = 12.sp)
-                            Text("${spaceMarineEquivalent.wounds}", fontSize = 12.sp)
+                            Text("${defenderProfile.value.wounds}", fontSize = 12.sp)
                         }
                         Column(modifier = Modifier.fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally){
                             Text(text = "Save", fontSize = 12.sp)
-                            Text("${spaceMarineEquivalent.save}+", fontSize = 12.sp)
+                            Text("${defenderProfile.value.save}+", fontSize = 12.sp)
                         }
-                        if(spaceMarineEquivalent.invulnerable > 0){
+                        if(defenderProfile.value.invulnerable > 0){
                             Column(modifier = Modifier.fillMaxHeight(),
                                 horizontalAlignment = Alignment.CenterHorizontally){
                                 Text(text = "Invul Save", fontSize = 12.sp)
-                                Text("${spaceMarineEquivalent.invulnerable}+", fontSize = 12.sp)
+                                Text("${defenderProfile.value.invulnerable}+", fontSize = 12.sp)
                             }
                         }
-                        if(spaceMarineEquivalent.feelNoPain > 0){
+                        if(defenderProfile.value.feelNoPain > 0){
                             Column(modifier = Modifier.fillMaxHeight(),
                                 horizontalAlignment = Alignment.CenterHorizontally){
                                 Text(text = "Feel no Pain", fontSize = 12.sp)
-                                Text("${spaceMarineEquivalent.feelNoPain}+", fontSize = 12.sp)
+                                Text("${defenderProfile.value.feelNoPain}+", fontSize = 12.sp)
                             }
                         }
                     }
                     Text("Keywords: $keywordsString")
                 }
             }
+        }
+
+        if(showDefenderDialog.value){
+            selectedProfile = defenderProfile.value
+            AlertDialog(onDismissRequest = {},
+                confirmButton = {Row(modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween){
+                    Button(onClick = {
+                        defenderProfile.value = selectedProfile.copy()
+                        showDefenderDialog.value = false
+                    }){
+                        Text(text = "Confirm")
+                    }
+                    Button(onClick = { showDefenderDialog.value = false }){
+                        Text(text = "Cancel")
+                    }
+                }},
+                title = {Text("Select Defender")},
+                text = {
+                    ExposedDropdownMenuBox(expanded = defenderDropdownExpanded.value,
+                        onExpandedChange = {defenderDropdownExpanded.value = !defenderDropdownExpanded.value}){
+                        TextField(value = selectedProfile.profileName, onValueChange = {}, readOnly = true, modifier = Modifier.menuAnchor(),
+                            trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(defenderDropdownExpanded.value)})
+                        ExposedDropdownMenu(expanded = defenderDropdownExpanded.value, onDismissRequest = {defenderDropdownExpanded.value = false}){
+                            allProfiles.value.forEach{profile->
+                                DropdownMenuItem(text = {Text(profile.profileName)},
+                                    onClick = {
+                                        selectedProfile = profile
+                                        defenderDropdownExpanded.value = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            )
         }
         //endregion
     }
@@ -222,10 +321,4 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
             Text("Abilities: $abilitiesString")
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SimulatorPreview(){
-    SimulatorScreen()
 }
