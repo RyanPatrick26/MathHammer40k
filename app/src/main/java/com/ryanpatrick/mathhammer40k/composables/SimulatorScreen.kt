@@ -148,11 +148,11 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
         //endregion
 
         //region defender
+        var isDefenderExpanded by remember { mutableStateOf(true) }
         if(defenderProfile.value.id == 0L){
             defenderProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
         }
-        var isDefenderExpanded by remember { mutableStateOf(true) }
         var keywordsString = ""
         if(defenderProfile.value.keywords.size == 1){
             keywordsString = defenderProfile.value.keywords[0].title
@@ -221,6 +221,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
             }
         }
 
+        //select defender dialog
         if(showDefenderDialog.value){
             selectedProfile = defenderProfile.value
             AlertDialog(onDismissRequest = {},
@@ -255,6 +256,42 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     }
                 }
             )
+        }
+        //endregion
+
+        //region simulator
+        var isSimulatorExpanded by remember {mutableStateOf(true)}
+        Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
+            .clickable { isSimulatorExpanded = !isSimulatorExpanded },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally){
+            ExpandableSectionTitle(isExpanded = isSimulatorExpanded, title = "Simulator")
+            AnimatedVisibility(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxWidth().padding(8.dp), visible = isDefenderExpanded){
+                Column{
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween){
+                        Text("Expected Results: ")
+                        Text("Test Data")
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween){
+                        Text("Chance of x or better: ")
+                        Text("Test Data")
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween){
+                        Text("Chance to kill: ")
+                        Text("Test Data")
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End){
+                        Button(onClick = {}){
+                            Text("Run Simulations")
+                        }
+                    }
+                }
+            }
         }
         //endregion
     }
