@@ -9,73 +9,88 @@ import kotlin.random.Random
 
 class Simulator {
     companion object{
-        fun runSimulation(attackerWeapons: List<Weapon>, defenderProfile: Profile){
+        fun runSimulation(attackerWeapons: List<Weapon>, defenderProfile: Profile): SimulationResults{
             val attackSimulation = AttackSequence(mutableListOf(),  mutableListOf(), mutableListOf(),
                 mutableListOf(), mutableListOf(), mutableListOf())
+            var killsList = mutableListOf<Int>()
             var modelsKilled: Int
-            var testString = "Attacks\n"
+            var testString: String
+            val startTime = System.currentTimeMillis()
+
             attackerWeapons.forEach { weapon->
                 attackSimulation.weaponName.add(weapon.name)
             }
-            //region determine number of attacks
-            attackSimulation.numAttacks.addAll(determineNumAttacks(attackerWeapons))
-            for(i in 0..<attackSimulation.weaponName.count()){
-                testString += "${attackSimulation.weaponName[i]}: ${attackSimulation.numAttacks[i]} attacks"
-                if(i < attackSimulation.weaponName.count()-1){
-                    testString += "\n"
+
+            for(i in 1..10000) {
+                //region determine number of attacks
+                attackSimulation.numAttacks.addAll(determineNumAttacks(attackerWeapons))
+                testString = "Attacks\n"
+                for(j in 0..<attackSimulation.weaponName.count()){
+                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numAttacks[j]} attacks\n"
                 }
-            }
-            Log.i("Simulator", testString)
-            //endregion
+                //endregion
 
-            //region determine number of hits
-            attackSimulation.numHits.addAll(rollToHit(attackerWeapons, attackSimulation.numAttacks))
-            testString = "Hits\n"
-            for(i in attackSimulation.weaponName.indices){
-                testString += "${attackSimulation.weaponName[i]}: ${attackSimulation.numHits[i]} Hits"
-                if(i < attackSimulation.weaponName.count()-1){
-                    testString += "\n"
+                //region determine number of hits
+                attackSimulation.numHits.addAll(rollToHit(attackerWeapons, attackSimulation.numAttacks))
+                testString = "Hits\n"
+                for(j in 0..<attackSimulation.weaponName.count()){
+                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numHits[j]} hits\n"
                 }
-            }
-            Log.i("Simulator", testString)
-            //endregion
+                //endregion
 
-            //region determine number of wounds
-            attackSimulation.numWounds.addAll(rollToWound(attackerWeapons, attackSimulation.numHits, defenderProfile))
-            testString = "Wounds\n"
-            for(i in attackSimulation.weaponName.indices){
-                testString += "${attackSimulation.weaponName[i]}: ${attackSimulation.numWounds[i]} wounds"
-                if(i < attackSimulation.weaponName.count()-1){
-                    testString += "\n"
+                //region determine number of wounds
+                attackSimulation.numWounds.addAll(rollToWound(attackerWeapons, attackSimulation.numHits, defenderProfile))
+                testString = "Wounds\n"
+                for(j in 0..<attackSimulation.weaponName.count()){
+                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numWounds[j]} wounds\n"
                 }
-            }
-            Log.i("Simulator", testString)
-            //endregion
+                //endregion
 
-            //region determine number of failed saves
-            attackSimulation.numFailedSaves.addAll(rollSave(attackerWeapons, attackSimulation.numWounds, defenderProfile))
-            testString = "Failed Saves\n"
-            for(i in attackSimulation.weaponName.indices){
-                testString += "${attackSimulation.weaponName[i]}: ${attackSimulation.numFailedSaves[i]} failed saves"
-                if(i < attackSimulation.weaponName.count()-1){
-                    testString += "\n"
+                //region determine number of failed saves
+                attackSimulation.numFailedSaves.addAll(rollSave(attackerWeapons, attackSimulation.numWounds, defenderProfile))
+                testString = "Failed Saves\n"
+                for(j in 0..<attackSimulation.weaponName.count()){
+                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numAttacks[j]} failed saves\n"
                 }
+                //endregion
+
+                //region determine damage dealt
+                val pair = determineDamage(attackerWeapons, attackSimulation.numFailedSaves, defenderProfile)
+                modelsKilled = pair.first
+                attackSimulation.damageDealt.addAll(pair.second)
+                testString = "Kills\n"
+                for(j in 0..<attackSimulation.weaponName.count()){
+                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.damageDealt[j]} kills\n"
+                }
+                //endregion
+                killsList.add(modelsKilled)
+
+                attackSimulation.numAttacks.clear()
+                attackSimulation.numHits.clear()
+                attackSimulation.numWounds.clear()
+                attackSimulation.numFailedSaves.clear()
+                attackSimulation.damageDealt.clear()
             }
-            Log.i("Simulator", testString)
-            //endregion
+            killsList = killsList.map {
+                if(it > defenderProfile.modelCount){
+                    val num = it - defenderProfile.modelCount
+                    it - num
+                } else{
+                    it
+                }
+            }.toMutableList()
+            val endTime = (System.currentTimeMillis() - startTime).toFloat()
+            Log.i("Simulator", "it took ${endTime/1000} seconds")
+            val killsMap = killsList.groupingBy { it }.eachCount()
+            val expectedKills = killsMap.maxBy { it.value }.key
+            val expectedPercentage = (killsMap[expectedKills]!!.toFloat()/100)
 
-            //region determine damage dealt
-            val pair = determineDamage(attackerWeapons, attackSimulation.numFailedSaves, defenderProfile)
-            modelsKilled = pair.first
-            attackSimulation.damageDealt.addAll(pair.second)
-            //endregion
+            val destroyUnitPercentage =
+                if(killsMap.containsKey(defenderProfile.modelCount)) (killsMap[defenderProfile.modelCount]!!.toFloat()/100)
+                else 0F
 
-            /*attackSimulation.weaponName.clear()
-            attackSimulation.numAttacks.clear()
-            attackSimulation.numHits.clear()
-            attackSimulation.numWounds.clear()
-            attackSimulation.numFailedSaves.clear()
-            attackSimulation.damageDealt.clear()*/
+            return SimulationResults(expectedKills, expectedPercentage, destroyUnitPercentage, attackSimulation)
+
         }
 
         private fun determineNumAttacks(attackerWeapons: List<Weapon>): List<Int>{
@@ -135,7 +150,7 @@ class Simulator {
             var weapon: Weapon
             val woundWeaponsList = mutableListOf<Int>()
 
-            for(i in 0..< numHitsList.count()){
+            for(i in 0..<attackerWeapons.count()){
                 numWounds = 0
                 weapon = attackerWeapons[i]
                 if(numHitsList[i] > 0){
@@ -159,10 +174,9 @@ class Simulator {
             var weapon: Weapon
             val saveWeaponsList = mutableListOf<Int>()
 
-            for(i in 0..< numWoundsList.count()){
+            for(i in 0..<attackerWeapons.count()){
                 numNotSaved = 0
                 weapon = attackerWeapons[i]
-                //Log.i("Simulator", weapon.name)
                 if(numWoundsList[0] > 0) {
                     for (j in 1..numWoundsList[i]) {
                         saveRoll = Random.nextInt(1, 7)
@@ -184,9 +198,9 @@ class Simulator {
             var weapon: Weapon
             var damage: Int
             var damageDealt: Int
-            var testString = "Damage\n"
             val damageDealtList = mutableListOf<Int>()
-            for(i in 0..<failedSavesList.count()){
+
+            for(i in 0..<attackerWeapons.count()){
                 damageDealt = 0
                 weapon = attackerWeapons[i]
                 for(j in 1..failedSavesList[i]) {
@@ -213,10 +227,6 @@ class Simulator {
                 }
                 damageDealtList.add(damageDealt)
             }
-
-
-            testString += "Models Killed: $modelsKilled"
-            Log.i("Simulator", testString)
             return Pair(modelsKilled, damageDealtList)
         }
 
@@ -247,19 +257,17 @@ class Simulator {
         }
 
         private fun checkIfSaved(roll: Int, ap: Int, save: Int, invulnerable: Int): Boolean{
-            //Log.i("Simulator", "Roll: $roll, ap: $ap, Save: $save, Invulnerable: $invulnerable")
             if(roll == 1){
-                //Log.i("Simulator", "failed")
                 return false
             }
 
             else if(roll - ap < save || roll < invulnerable){
-                //Log.i("Simulator", "failed")
                 return false
             }
-
-            //Log.i("Simulator", "true")
             return true
         }
     }
 }
+
+data class SimulationResults(val expectedResult: Int, val expectedPercent: Float,
+                             val destroyUnitPercent: Float, val attackSequence: AttackSequence)

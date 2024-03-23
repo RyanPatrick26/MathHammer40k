@@ -69,7 +69,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
         //region attacker
         var isAttackerExpanded by remember{ mutableStateOf(true) }
         if(attackerProfile.value.id == 0L){
-            attackerProfile.value = profileViewModel.getProfileById(3).collectAsState(Profile(0, "", listOf(),
+            attackerProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
         }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
@@ -148,7 +148,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
         //region defender
         var isDefenderExpanded by remember { mutableStateOf(true) }
         if(defenderProfile.value.id == 0L){
-            defenderProfile.value = profileViewModel.getProfileById(2).collectAsState(Profile(0, "", listOf(),
+            defenderProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
         }
         var keywordsString = ""
