@@ -14,7 +14,7 @@ val Ability.title: String get(){
         Ability.SUSTAINED_2 -> "Sustained Hits 2"
         Ability.SUSTAINED_D3 -> "Sustained Hits d3"
         Ability.LETHAL -> "Lethal Hits"
-        Ability.DEVASTATING -> "Critical Wound: ignore saves"
+        Ability.DEVASTATING -> "Devastating Wounds"
         Ability.HEAVY -> "Heavy"
         Ability.IGN_COVER -> "Ignores Cover"
         Ability.TORRENT -> "Torrent"

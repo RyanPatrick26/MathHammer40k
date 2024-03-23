@@ -50,9 +50,9 @@ val spaceMarineEquivalent: Profile = Profile(
 
 val guardsmanEquivalent: Profile = Profile(
     profileName = "Guardsman Equivalent",
-    modelCount = 5,
+    modelCount = 10,
     toughness = 3,
-    wounds = 2,
+    wounds = 1,
     save = 5,
     keywords = mutableListOf(Keywords.INFANTRY),
     roles = mutableListOf(Roles.MELEE, Roles.RANGED, Roles.DEFENDER),

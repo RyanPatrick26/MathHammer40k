@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ryanpatrick.mathhammer40k.Simulator
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
 import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
@@ -65,12 +66,10 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
 
         var selectedProfile: Profile
 
-
-
         //region attacker
         var isAttackerExpanded by remember{ mutableStateOf(true) }
         if(attackerProfile.value.id == 0L){
-            attackerProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
+            attackerProfile.value = profileViewModel.getProfileById(3).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
         }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
@@ -116,7 +115,6 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     horizontalArrangement = Arrangement.SpaceBetween){
                     Button(onClick = {
                         attackerProfile.value = selectedProfile.copy()
-                        Log.i("Simulator", attackerProfile.value.toString())
                         showAttackerDialog.value = false
                     }){
                         Text(text = "Confirm")
@@ -150,7 +148,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
         //region defender
         var isDefenderExpanded by remember { mutableStateOf(true) }
         if(defenderProfile.value.id == 0L){
-            defenderProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
+            defenderProfile.value = profileViewModel.getProfileById(2).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
         }
         var keywordsString = ""
@@ -267,7 +265,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
             horizontalAlignment = Alignment.CenterHorizontally){
             ExpandableSectionTitle(isExpanded = isSimulatorExpanded, title = "Simulator")
             AnimatedVisibility(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
-                .fillMaxWidth().padding(8.dp), visible = isDefenderExpanded){
+                .fillMaxWidth().padding(8.dp), visible = isSimulatorExpanded){
                 Column{
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween){
@@ -286,7 +284,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     }
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End){
-                        Button(onClick = {}){
+                        Button(onClick = {Simulator.runSimulation(attackerProfile.value.weapons, defenderProfile.value)}){
                             Text("Run Simulations")
                         }
                     }
@@ -314,13 +312,19 @@ fun ExpandableSectionTitle(modifier: Modifier = Modifier, isExpanded: Boolean, t
 fun SimulatorWeaponsListItem(weapon: Weapon){
     var abilitiesString = ""
     val fontSize = 12.sp
+    val hitText = if(weapon.attack.toHit == null) "-" else "${weapon.attack.toHit}+"
 
     if(weapon.abilities.count() == 1){
         abilitiesString = weapon.abilities[0].title
     }
     else{
         for (ability in weapon.abilities){
-            abilitiesString += ability.title + ",\n"
+            if(weapon.abilities.last() != ability){
+                abilitiesString += ability.title + ", "
+            }
+            else{
+                abilitiesString += ability.title
+            }
         }
     }
 
@@ -338,7 +342,7 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "To Hit", fontSize = fontSize)
-                Text(text = "${weapon.attack.toHit}+", fontSize = fontSize)
+                Text(text = hitText, fontSize = fontSize)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally){
                 Text(text = "Strength", fontSize = fontSize)

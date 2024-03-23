@@ -1,5 +1,6 @@
 package com.ryanpatrick.mathhammer40k.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ryanpatrick.mathhammer40k.Graph
