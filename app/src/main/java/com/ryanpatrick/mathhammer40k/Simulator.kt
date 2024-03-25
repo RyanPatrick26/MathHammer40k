@@ -98,20 +98,9 @@ class Simulator {
             val attacksWeaponsList = mutableListOf<Int>()
             attackerWeapons.forEach { weapon ->
                 numAttacks = 0
-                if(weapon.numAttacks.toIntOrNull() == null){
-                    if(weapon.numAttacks.count { it.isDigit() } == 1){
-                        numAttacks = weapon.numAttacks.filter { it.isDigit() }.toInt()
-                        numAttacks = Random.nextInt(1, numAttacks+1)
-                    }
-                    else{
-                        numAttacks = Random.nextInt(1, weapon.numAttacks.first { it.isDigit() }.digitToInt()+1)+
-                                weapon.numAttacks.last { it.isDigit() }.digitToInt()
-                    }
+                for(i in 1..weapon.numPerUnit) {
+                    numAttacks += attackStringToInt(weapon.numAttacks, "attacks", weapon.name)
                 }
-                else{
-                    numAttacks = weapon.numAttacks.toInt()
-                }
-                numAttacks *= weapon.numPerUnit
                 attacksWeaponsList.add(numAttacks)
             }
             return attacksWeaponsList
@@ -204,20 +193,7 @@ class Simulator {
                 damageDealt = 0
                 weapon = attackerWeapons[i]
                 for(j in 1..failedSavesList[i]) {
-                    if (weapon.attack.damage.toIntOrNull() == null) {
-                        if (weapon.attack.damage.count { it.isDigit() } == 1) {
-                            damage = weapon.attack.damage.filter { it.isDigit() }.toInt()
-                            damage = Random.nextInt(1, damage + 1)
-                        } else {
-                            damage = Random.nextInt(
-                                1,
-                                weapon.attack.damage.first { it.isDigit() }.digitToInt() + 1
-                            ) +
-                                    weapon.attack.damage.last { it.isDigit() }.digitToInt()
-                        }
-                    } else {
-                        damage = weapon.attack.damage.toInt()
-                    }
+                    damage = attackStringToInt(weapon.attack.damage, "damage", weapon.name)
                     woundsLeft -= damage
                     if (woundsLeft <= 0) {
                         damageDealt++
@@ -265,6 +241,42 @@ class Simulator {
                 return false
             }
             return true
+        }
+
+        private fun attackStringToInt(string: String, from: String, weaponName: String): Int{
+            var tempInt = 0
+
+            //check to see if the provided value will require a random roll
+            if (string.toIntOrNull() == null) {
+                val numbersList = Regex("[0-9]+").findAll(string)
+                    .map(MatchResult::value).map { it.toInt() }.toList()
+                //check for d(x)
+                if (numbersList.count() == 1) {
+                    tempInt = Random.nextInt(1, string.filter { it.isDigit() }.toInt() + 1)
+                }
+                //check case for d(x) + (y)
+                else if(numbersList.count() == 2 && string.contains('+')){
+                    tempInt = Random.nextInt(1, numbersList[0] + 1) +
+                            numbersList[1]
+                }
+                //check case for (x)d(y)
+                else if(numbersList.count() == 2 && !string.contains('+')){
+                    tempInt = 0
+                    for(i in 1..numbersList[0]){
+                        tempInt += Random.nextInt(1, numbersList[1] + 1)
+                    }
+                }
+                //check cae for (x)d(y) + (z)
+                else if(numbersList.count() == 3){
+                    tempInt = numbersList[2]
+                    for(i in 1..numbersList[0]){
+                        tempInt += Random.nextInt(1, numbersList[1] + 1)
+                    }
+                }
+            } else {
+                tempInt = string.toInt()
+            }
+            return tempInt
         }
     }
 }
