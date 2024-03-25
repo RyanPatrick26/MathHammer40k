@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -44,40 +45,44 @@ import com.ryanpatrick.mathhammer40k.SimulationResults
 import com.ryanpatrick.mathhammer40k.Simulator
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
-import com.ryanpatrick.mathhammer40k.data.spaceMarineEquivalent
 import com.ryanpatrick.mathhammer40k.data.title
 import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
+val TAG = "SimulationScreen"
+var weaponsList = mutableListOf<Weapon>()
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimulatorScreen(profileViewModel: ProfileViewModel){
+    //region variables and values
+    val allProfiles = profileViewModel.getAllProfiles.collectAsState(listOf())
+    val attackerProfile = remember{mutableStateOf(Profile(0, "", listOf(),
+        keywords = listOf(), roles = listOf()))}
+    val defenderProfile = remember{mutableStateOf(Profile(0, "", listOf(),
+        keywords = listOf(), roles = listOf()))}
+
+    val showAttackerDialog = remember{mutableStateOf(false)}
+    val showDefenderDialog = remember{mutableStateOf(false)}
+
+    val attackerDropdownExpanded = remember{mutableStateOf(false)}
+    val defenderDropdownExpanded = remember{mutableStateOf(false)}
+
+    val expectedResults = remember{mutableStateOf("Run Simulation")}
+    val expectedPercentage = remember{mutableStateOf("Run Simulation")}
+    val destroyUnitPercentage = remember{mutableStateOf("Run Simulation")}
+
+    var simulationResults: SimulationResults
+
+    var selectedProfile: Profile
+    //endregion
+
     Column(modifier = Modifier.fillMaxSize().padding(8.dp).verticalScroll(rememberScrollState(), enabled = true),
         horizontalAlignment = Alignment.CenterHorizontally){
-        val allProfiles = profileViewModel.getAllProfiles.collectAsState(listOf())
-        val attackerProfile = remember{mutableStateOf(Profile(0, "", listOf(),
-            keywords = listOf(), roles = listOf()))}
-        val defenderProfile = remember{mutableStateOf(Profile(0, "", listOf(),
-            keywords = listOf(), roles = listOf()))}
-
-        val showAttackerDialog = remember{mutableStateOf(false)}
-        val showDefenderDialog = remember{mutableStateOf(false)}
-
-        val attackerDropdownExpanded = remember{mutableStateOf(false)}
-        val defenderDropdownExpanded = remember{mutableStateOf(false)}
-
-        val expectedResults = remember{mutableStateOf("Run Simulation")}
-        val expectedPercentage = remember{mutableStateOf("Run Simulation")}
-        val destroyUnitPercentage = remember{mutableStateOf("Run Simulation")}
-
-        var simulationResults: SimulationResults
-
-        var selectedProfile: Profile
-
         //region attacker
         var isAttackerExpanded by remember{ mutableStateOf(true) }
         if(attackerProfile.value.id == 0L){
             attackerProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
+            weaponsList = attackerProfile.value.weapons.toMutableList()
         }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
             .clickable { isAttackerExpanded = !isAttackerExpanded },
@@ -122,6 +127,8 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     horizontalArrangement = Arrangement.SpaceBetween){
                     Button(onClick = {
                         attackerProfile.value = selectedProfile.copy()
+                        weaponsList = attackerProfile.value.weapons.toMutableList()
+                        Log.i(TAG, weaponsList.toString())
                         showAttackerDialog.value = false
                     }){
                         Text(text = "Confirm")
@@ -295,7 +302,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End){
                         Button(onClick = {
-                            simulationResults = Simulator.runSimulation(attackerProfile.value.weapons, defenderProfile.value)
+                            simulationResults = Simulator.runSimulation(weaponsList, defenderProfile.value)
                             expectedResults.value = "${simulationResults.expectedResult}"
                             expectedPercentage.value = "${simulationResults.expectedPercent}%"
                             destroyUnitPercentage.value = "${simulationResults.destroyUnitPercent}%"
@@ -327,6 +334,7 @@ fun ExpandableSectionTitle(modifier: Modifier = Modifier, isExpanded: Boolean, t
 fun SimulatorWeaponsListItem(weapon: Weapon){
     var abilitiesString = ""
     val fontSize = 12.sp
+    val checked = remember{ mutableStateOf(true) }
     val hitText = if(weapon.attack.toHit == null) "-" else "${weapon.attack.toHit}+"
 
     if(weapon.abilities.count() == 1){
@@ -334,47 +342,53 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
     }
     else{
         for (ability in weapon.abilities){
-            if(weapon.abilities.last() != ability){
-                abilitiesString += ability.title + ", "
-            }
-            else{
-                abilitiesString += ability.title
-            }
+            abilitiesString += if(weapon.abilities.last() != ability) ability.title + ", "
+             else ability.title
+
         }
     }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)){
-        Text(weapon.name)
-        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly){
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "Count", fontSize = fontSize)
-                Text(text = "${weapon.numPerUnit}", fontSize = fontSize)
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked = checked.value, onCheckedChange = {
+            checked.value = !checked.value
+            if(checked.value) weaponsList.add(weapon)
+            else weaponsList.remove(weapon)
+
+            Log.i(TAG, weaponsList.toString())
+        })
+        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)){
+            Text(weapon.name)
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly){
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "Count", fontSize = fontSize)
+                    Text(text = "${weapon.numPerUnit}", fontSize = fontSize)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "Attacks", fontSize = fontSize)
+                    Text(text = weapon.numAttacks, fontSize = fontSize)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "To Hit", fontSize = fontSize)
+                    Text(text = hitText, fontSize = fontSize)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "Strength", fontSize = fontSize)
+                    Text(text = "${weapon.attack.strength}", fontSize = fontSize)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "AP", fontSize = fontSize)
+                    Text(text = if(weapon.attack.ap == 0) "${weapon.attack.ap}"
+                    else "-${weapon.attack.ap}", fontSize = fontSize)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally){
+                    Text(text = "Damage", fontSize = fontSize)
+                    Text(weapon.attack.damage, fontSize = fontSize)
+                }
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "Attacks", fontSize = fontSize)
-                Text(text = weapon.numAttacks, fontSize = fontSize)
+            if(weapon.abilities.isNotEmpty()){
+                Text("Abilities: $abilitiesString")
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "To Hit", fontSize = fontSize)
-                Text(text = hitText, fontSize = fontSize)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "Strength", fontSize = fontSize)
-                Text(text = "${weapon.attack.strength}", fontSize = fontSize)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "AP", fontSize = fontSize)
-                Text(text = if(weapon.attack.ap == 0) "${weapon.attack.ap}"
-                            else "-${weapon.attack.ap}", fontSize = fontSize)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = "Damage", fontSize = fontSize)
-                Text(weapon.attack.damage, fontSize = fontSize)
-            }
-        }
-        if(weapon.abilities.isNotEmpty()){
-            Text("Abilities: $abilitiesString")
         }
     }
 }
