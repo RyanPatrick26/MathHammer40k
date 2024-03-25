@@ -1,6 +1,7 @@
 package com.ryanpatrick.mathhammer40k.composables
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,12 +34,14 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ryanpatrick.mathhammer40k.SimulationResults
@@ -49,11 +52,15 @@ import com.ryanpatrick.mathhammer40k.data.title
 import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
 val TAG = "SimulationScreen"
+val weaponsListState = mutableStateListOf<Weapon>()
 var weaponsList = mutableListOf<Weapon>()
+var globalType = "Ranged"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimulatorScreen(profileViewModel: ProfileViewModel){
     //region variables and values
+    val context = LocalContext.current
     val allProfiles = profileViewModel.getAllProfiles.collectAsState(listOf())
     val attackerProfile = remember{mutableStateOf(Profile(0, "", listOf(),
         keywords = listOf(), roles = listOf()))}
@@ -82,7 +89,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
         if(attackerProfile.value.id == 0L){
             attackerProfile.value = profileViewModel.getProfileById(1).collectAsState(Profile(0, "", listOf(),
                 keywords = listOf(), roles = listOf())).value
-            weaponsList = attackerProfile.value.weapons.toMutableList()
+            setDefaultWeapons(attackerProfile.value.weapons)
         }
         Column(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(8.dp)
             .clickable { isAttackerExpanded = !isAttackerExpanded },
@@ -92,27 +99,36 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
             AnimatedVisibility(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
                 .fillMaxWidth().padding(8.dp), visible = isAttackerExpanded){
                 Column {
+                    //region buttons row
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween){
-                        Row{
-                            Button(onClick = { showAttackerDialog.value = true }, contentPadding = PaddingValues(4.dp),
+                        Button(onClick = { showAttackerDialog.value = true }, contentPadding = PaddingValues(4.dp),
                                 modifier = Modifier.padding(4.dp)){
                                 Text("Select Profile", fontSize = 12.sp)
-                            }
                         }
                         Row{
-                            Button(onClick = {}, contentPadding = PaddingValues(4.dp),
-                                modifier = Modifier.padding(4.dp)){
+                            Button(onClick = {
+                                    val hasWeapons = switchWeaponTypes(attackerProfile.value.weapons, "Melee")
+                                    if(!hasWeapons){
+                                        Toast.makeText(context, "Profile has no melee weapons", Toast.LENGTH_SHORT).show()
+                                    }
+                                }, contentPadding = PaddingValues(4.dp), modifier = Modifier.padding(4.dp)){
                                 Text("Melee", fontSize = 12.sp)
                             }
-                            Button(onClick = {}, contentPadding = PaddingValues(4.dp),
+                            Button(onClick = {
+                                    val hasWeapons = switchWeaponTypes(attackerProfile.value.weapons, "Ranged")
+                                    if(!hasWeapons){
+                                        Toast.makeText(context, "Profile has no ranged weapons", Toast.LENGTH_SHORT).show()
+                                    }
+                                }, contentPadding = PaddingValues(4.dp),
                                 modifier = Modifier.padding(4.dp)){
                                 Text("Ranged", fontSize = 12.sp)
                             }
                         }
                     }
+                    //endregion
                     Text(attackerProfile.value.profileName)
-                    for(weapon in attackerProfile.value.weapons){
+                    for(weapon in weaponsListState){
                         SimulatorWeaponsListItem(weapon)
                     }
                 }
@@ -127,8 +143,8 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     horizontalArrangement = Arrangement.SpaceBetween){
                     Button(onClick = {
                         attackerProfile.value = selectedProfile.copy()
-                        weaponsList = attackerProfile.value.weapons.toMutableList()
-                        Log.i(TAG, weaponsList.toString())
+                        weaponsListState.clear()
+                        weaponsListState.addAll(attackerProfile.value.weapons)
                         showAttackerDialog.value = false
                     }){
                         Text(text = "Confirm")
@@ -337,6 +353,8 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
     val checked = remember{ mutableStateOf(true) }
     val hitText = if(weapon.attack.toHit == null) "-" else "${weapon.attack.toHit}+"
 
+    checked.value = weaponsList.contains(weapon)
+
     if(weapon.abilities.count() == 1){
         abilitiesString = weapon.abilities[0].title
     }
@@ -349,12 +367,11 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
     }
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = checked.value, onCheckedChange = {
-            checked.value = !checked.value
-            if(checked.value) weaponsList.add(weapon)
-            else weaponsList.remove(weapon)
-
-            Log.i(TAG, weaponsList.toString())
+        Checkbox(checked = checked.value,
+            onCheckedChange = {
+                checked.value = !checked.value
+                if(checked.value) weaponsList.add(weapon)
+                else weaponsList.remove(weapon)
         })
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)){
             Text(weapon.name)
@@ -391,4 +408,26 @@ fun SimulatorWeaponsListItem(weapon: Weapon){
             }
         }
     }
+}
+
+fun setDefaultWeapons(allWeaponsList: List<Weapon>){
+    if(!allWeaponsList.none{it.type == "Ranged"}) {
+        weaponsListState.clear()
+        weaponsListState.addAll(allWeaponsList.filter { it.type == "Ranged" })
+    }
+    else if(allWeaponsList.none{it.type == "Ranged"} && !allWeaponsList.none{it.type == "Melee"}){
+        weaponsListState.clear()
+        weaponsListState.addAll(allWeaponsList.filter { it.type == "Melee" })
+    }
+    weaponsList = weaponsListState.toMutableList()
+}
+
+fun switchWeaponTypes(allWeaponsList: List<Weapon>, type: String): Boolean{
+    weaponsListState.clear()
+    if(!allWeaponsList.none { it.type == type }) {
+        globalType = type
+        weaponsListState.addAll(allWeaponsList.filter { it.type == type })
+    }
+    weaponsList = weaponsListState.toMutableList()
+    return !allWeaponsList.none { it.type == type }
 }
