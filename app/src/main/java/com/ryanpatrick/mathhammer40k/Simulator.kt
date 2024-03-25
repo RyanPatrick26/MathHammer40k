@@ -9,58 +9,89 @@ import kotlin.random.Random
 
 class Simulator {
     companion object{
+        private val TAG = "Simulator"
         fun runSimulation(attackerWeapons: List<Weapon>, defenderProfile: Profile): SimulationResults{
-            val attackSimulation = AttackSequence(mutableListOf(),  mutableListOf(), mutableListOf(),
-                mutableListOf(), mutableListOf(), mutableListOf())
+            val attackSimulation = AttackSequence()
+            var simulationAverages = AttackSequence()
+            var numAttacks: List<Int>
+            var numHits: List<Int>
+            var numWounds:List<Int>
+            var numFailedSaves: List<Int>
+            var damageDealt: List<Int>
             var killsList = mutableListOf<Int>()
             var modelsKilled: Int
-            var testString: String
             val startTime = System.currentTimeMillis()
 
             attackerWeapons.forEach { weapon->
                 attackSimulation.weaponName.add(weapon.name)
+                simulationAverages.weaponName.add(weapon.name)
             }
 
             for(i in 1..10000) {
                 //region determine number of attacks
-                attackSimulation.numAttacks.addAll(determineNumAttacks(attackerWeapons))
-                testString = "Attacks\n"
-                for(j in 0..<attackSimulation.weaponName.count()){
-                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numAttacks[j]} attacks\n"
+                numAttacks = determineNumAttacks(attackerWeapons)
+                attackSimulation.numAttacks.addAll(numAttacks)
+                for(j in 0..<simulationAverages.weaponName.size){
+                    if(simulationAverages.numAttacks.isEmpty()){
+                        simulationAverages.numAttacks.addAll(numAttacks)
+                    }
+                    else{
+                        simulationAverages.numAttacks[j]+=numAttacks[j]
+                    }
                 }
                 //endregion
 
                 //region determine number of hits
-                attackSimulation.numHits.addAll(rollToHit(attackerWeapons, attackSimulation.numAttacks))
-                testString = "Hits\n"
-                for(j in 0..<attackSimulation.weaponName.count()){
-                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numHits[j]} hits\n"
+                numHits = rollToHit(attackerWeapons, attackSimulation.numAttacks)
+                attackSimulation.numHits.addAll(numHits)
+                for(j in 0..<simulationAverages.weaponName.size){
+                    if(simulationAverages.numHits.isEmpty()){
+                        simulationAverages.numHits.addAll(numHits)
+                    }
+                    else{
+                        simulationAverages.numHits[j]+=numHits[j]
+                    }
                 }
                 //endregion
 
                 //region determine number of wounds
-                attackSimulation.numWounds.addAll(rollToWound(attackerWeapons, attackSimulation.numHits, defenderProfile))
-                testString = "Wounds\n"
-                for(j in 0..<attackSimulation.weaponName.count()){
-                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numWounds[j]} wounds\n"
+                numWounds = rollToWound(attackerWeapons, attackSimulation.numHits, defenderProfile)
+                attackSimulation.numWounds.addAll(numWounds)
+                for(j in 0..<simulationAverages.weaponName.size){
+                    if(simulationAverages.numWounds.isEmpty()){
+                        simulationAverages.numWounds.addAll(numWounds)
+                    }
+                    else{
+                        simulationAverages.numWounds[j]+=numWounds[j]
+                    }
                 }
                 //endregion
 
                 //region determine number of failed saves
-                attackSimulation.numFailedSaves.addAll(rollSave(attackerWeapons, attackSimulation.numWounds, defenderProfile))
-                testString = "Failed Saves\n"
-                for(j in 0..<attackSimulation.weaponName.count()){
-                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.numAttacks[j]} failed saves\n"
+                numFailedSaves = rollSave(attackerWeapons, attackSimulation.numWounds, defenderProfile)
+                attackSimulation.numFailedSaves.addAll(numFailedSaves)
+                for(j in 0..<simulationAverages.weaponName.size){
+                    if(simulationAverages.numFailedSaves.isEmpty()){
+                        simulationAverages.numFailedSaves.addAll(numFailedSaves)
+                    }
+                    else{
+                        simulationAverages.numFailedSaves[j]+=numFailedSaves[j]
+                    }
                 }
                 //endregion
 
                 //region determine damage dealt
                 val pair = determineDamage(attackerWeapons, attackSimulation.numFailedSaves, defenderProfile)
                 modelsKilled = pair.first
-                attackSimulation.damageDealt.addAll(pair.second)
-                testString = "Kills\n"
-                for(j in 0..<attackSimulation.weaponName.count()){
-                    testString += "${attackSimulation.weaponName[j]}: ${attackSimulation.damageDealt[j]} kills\n"
+                damageDealt = pair.second
+                attackSimulation.damageDealt.addAll(damageDealt)
+                for(j in 0..<simulationAverages.weaponName.size){
+                    if(simulationAverages.damageDealt.isEmpty()){
+                        simulationAverages.damageDealt.addAll(damageDealt)
+                    }
+                    else{
+                        simulationAverages.damageDealt[j]+=damageDealt[j]
+                    }
                 }
                 //endregion
                 killsList.add(modelsKilled)
@@ -79,17 +110,31 @@ class Simulator {
                     it
                 }
             }.toMutableList()
+            for(i in 0..<simulationAverages.weaponName.count()){
+                simulationAverages.numAttacks[i] /= 10000
+                simulationAverages.numHits[i] /= 10000
+                simulationAverages.numWounds[i] /= 10000
+                simulationAverages.numFailedSaves[i] /= 10000
+                simulationAverages.damageDealt[i] /= 10000
+            }
             val endTime = (System.currentTimeMillis() - startTime).toFloat()
             Log.i("Simulator", "it took ${endTime/1000} seconds")
+
             val killsMap = killsList.groupingBy { it }.eachCount()
             val expectedKills = killsMap.maxBy { it.value }.key
-            val expectedPercentage = (killsMap[expectedKills]!!.toFloat()/100)
+            var expectedPercentage = 0F
+            killsMap.forEach { (i, k) ->
+                if(i >= expectedKills){
+                    expectedPercentage += k.toFloat()
+                }
+            }
+            expectedPercentage /= 100F
 
             val destroyUnitPercentage =
                 if(killsMap.containsKey(defenderProfile.modelCount)) (killsMap[defenderProfile.modelCount]!!.toFloat()/100)
                 else 0F
 
-            return SimulationResults(expectedKills, expectedPercentage, destroyUnitPercentage, attackSimulation)
+            return SimulationResults(expectedKills, expectedPercentage, destroyUnitPercentage, simulationAverages)
 
         }
 

@@ -1,5 +1,8 @@
 package com.ryanpatrick.mathhammer40k.data
 
-data class AttackSequence(val weaponName: MutableList<String>, val numAttacks: MutableList<Int>,
-                          val numHits: MutableList<Int>, val numWounds: MutableList<Int>,
-                          val numFailedSaves: MutableList<Int>, val damageDealt: MutableList<Int>)
+data class AttackSequence(val weaponName: MutableList<String> = mutableListOf(),
+                          val numAttacks: MutableList<Int> = mutableListOf(),
+                          val numHits: MutableList<Int> = mutableListOf(),
+                          val numWounds: MutableList<Int> = mutableListOf(),
+                          val numFailedSaves: MutableList<Int> = mutableListOf(),
+                          val damageDealt: MutableList<Int> = mutableListOf())

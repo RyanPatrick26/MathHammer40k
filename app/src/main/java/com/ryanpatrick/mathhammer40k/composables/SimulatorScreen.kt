@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ryanpatrick.mathhammer40k.SimulationResults
 import com.ryanpatrick.mathhammer40k.Simulator
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
@@ -63,6 +64,12 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
 
         val attackerDropdownExpanded = remember{mutableStateOf(false)}
         val defenderDropdownExpanded = remember{mutableStateOf(false)}
+
+        val expectedResults = remember{mutableStateOf("Run Simulation")}
+        val expectedPercentage = remember{mutableStateOf("Run Simulation")}
+        val destroyUnitPercentage = remember{mutableStateOf("Run Simulation")}
+
+        var simulationResults: SimulationResults
 
         var selectedProfile: Profile
 
@@ -270,21 +277,29 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween){
                         Text("Expected Results: ")
-                        Text("Test Data")
+                        Text(expectedResults.value)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween){
                         Text("Chance of x or better: ")
-                        Text("Test Data")
+                        Text(expectedPercentage.value)
                     }
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween){
-                        Text("Chance to kill: ")
-                        Text("Test Data")
+                    if(expectedPercentage.value != destroyUnitPercentage.value){
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween){
+                            Text("Chance to kill: ")
+                            Text(destroyUnitPercentage.value)
+                        }
                     }
+
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End){
-                        Button(onClick = {Simulator.runSimulation(attackerProfile.value.weapons, defenderProfile.value)}){
+                        Button(onClick = {
+                            simulationResults = Simulator.runSimulation(attackerProfile.value.weapons, defenderProfile.value)
+                            expectedResults.value = "${simulationResults.expectedResult}"
+                            expectedPercentage.value = "${simulationResults.expectedPercent}%"
+                            destroyUnitPercentage.value = "${simulationResults.destroyUnitPercent}%"
+                        }){
                             Text("Run Simulations")
                         }
                     }
