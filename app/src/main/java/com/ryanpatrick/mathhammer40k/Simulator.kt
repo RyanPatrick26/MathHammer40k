@@ -3,6 +3,7 @@ package com.ryanpatrick.mathhammer40k
 import android.util.Log
 import com.ryanpatrick.mathhammer40k.data.Ability
 import com.ryanpatrick.mathhammer40k.data.AttackSequence
+import com.ryanpatrick.mathhammer40k.data.GlobalEffects
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
 import kotlin.random.Random
@@ -10,7 +11,8 @@ import kotlin.random.Random
 class Simulator {
     companion object{
         private val TAG = "Simulator"
-        fun runSimulation(attackerWeapons: List<Weapon>, defenderProfile: Profile): SimulationResults{
+        fun runSimulation(type: String, modifiersList: List<GlobalEffects>, attackerWeapons: List<Weapon>,
+                          tempAbilities: List<Ability>, defenderProfile: Profile): SimulationResults{
             val attackSimulation = AttackSequence()
             var simulationAverages = AttackSequence()
             var numAttacks: List<Int>
@@ -21,6 +23,10 @@ class Simulator {
             var killsList = mutableListOf<Int>()
             var modelsKilled: Int
             val startTime = System.currentTimeMillis()
+
+            attackerWeapons.forEach { weapon ->
+                weapon.abilities.addAll(tempAbilities.filter { !weapon.abilities.contains(it) })
+            }
 
             attackerWeapons.forEach { weapon->
                 attackSimulation.weaponName.add(weapon.name)

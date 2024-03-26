@@ -5,7 +5,8 @@ enum class Ability{
     LANCE, BLAST, RAPID_1, RAPID_2, RAPID_3, RAPID_4, RAPID_D63, ANTI_IN_4, ANTI_IN_3, ANTI_IN_2,
     ANTI_CHAR_4, ANTI_CHAR_3, ANTI_CHAR_2, ANTI_VEH_4, ANTI_VEH_3, ANTI_VEH_2, ANTI_FLY_4, ANTI_FLY_3, ANTI_FLY_2,
     ANTI_WALK_4, ANTI_WALK_3, ANTI_WALK_2, ANTI_MON_4, ANTI_MON_3, ANTI_MON_2, ANTI_DAE_4, ANTI_DAE_3, ANTI_DAE_2,
-    ANTI_PSY_4, ANTI_PSY_3, ANTI_PSY_2, MELTA_2, MELTA_4, MELTA_6, MELTA_D3
+    ANTI_PSY_4, ANTI_PSY_3, ANTI_PSY_2, MELTA_2, MELTA_4, MELTA_6, MELTA_D3, REROLL_1S_HIT, REROLL_MISSES, HITS_FISH,
+    REROLL_1S_WOUND, REROLL_WOUNDS, WOUNDS_FISH
 }
 
 val Ability.title: String get(){
@@ -54,6 +55,7 @@ val Ability.title: String get(){
         Ability.MELTA_4 -> "Melta 4"
         Ability.MELTA_6 -> "Melta 6"
         Ability.MELTA_D3 -> "Melta d3"
+        else -> ""
     }
 }
 val Ability.effect: String get(){
@@ -96,11 +98,59 @@ val Ability.effect: String get(){
         Ability.ANTI_DAE_3 -> "Unmodified wound roll of 3+ vs Daemon: critical wound"
         Ability.ANTI_DAE_2 -> "Unmodified wound roll of 2+ vs Daemon: critical wound"
         Ability.ANTI_PSY_4 -> "Unmodified wound roll of 4+ vs Psyker: critical wound"
-        Ability.ANTI_PSY_3 -> "Unmodified wound roll of 4+ vs Psyker: critical wound"
-        Ability.ANTI_PSY_2 -> "Unmodified wound roll of 4+ vs Psyker: critical wound"
+        Ability.ANTI_PSY_3 -> "Unmodified wound roll of 3+ vs Psyker: critical wound"
+        Ability.ANTI_PSY_2 -> "Unmodified wound roll of 2+ vs Psyker: critical wound"
         Ability.MELTA_2 -> "+2 damage at half range"
         Ability.MELTA_4 -> "+4 damage at half range"
         Ability.MELTA_6 -> "+6 damage at half range"
         Ability.MELTA_D3 -> "+d3 damage at half range"
+        Ability.REROLL_1S_HIT -> "Re-roll all hit rolls of 1"
+        Ability.REROLL_MISSES -> "Re-roll all failed hits"
+        Ability.HITS_FISH-> "Re-roll all hits that didn't crit"
+        Ability.REROLL_1S_WOUND -> "Re-roll all wound rolls of 1"
+        Ability.REROLL_WOUNDS -> "Re-roll all failed wounds"
+        Ability.WOUNDS_FISH -> "Re-roll all wounds that didn't crit"
+    }
+}
+
+val Ability.effectValue: String get(){
+    return when(this) {
+        Ability.SUSTAINED_1 -> "1"
+        Ability.SUSTAINED_2 -> "2"
+        Ability.SUSTAINED_D3 -> "d3"
+        Ability.RAPID_1 -> "1"
+        Ability.RAPID_2 -> "2"
+        Ability.RAPID_3 -> "3"
+        Ability.RAPID_4 -> "4"
+        Ability.RAPID_D63 -> "d6+3"
+        Ability.ANTI_IN_4 -> "4"
+        Ability.ANTI_IN_3 -> "3"
+        Ability.ANTI_IN_2 -> "2"
+        Ability.ANTI_CHAR_4 -> "4"
+        Ability.ANTI_CHAR_3 -> "3"
+        Ability.ANTI_CHAR_2 -> "2"
+        Ability.ANTI_VEH_4 -> "4"
+        Ability.ANTI_VEH_3 -> "3"
+        Ability.ANTI_VEH_2 -> "2"
+        Ability.ANTI_FLY_4 -> "4"
+        Ability.ANTI_FLY_3 -> "3"
+        Ability.ANTI_FLY_2 -> "2"
+        Ability.ANTI_WALK_4 -> "4"
+        Ability.ANTI_WALK_3 -> "3"
+        Ability.ANTI_WALK_2 -> "2"
+        Ability.ANTI_MON_4 -> "4"
+        Ability.ANTI_MON_3 -> "3"
+        Ability.ANTI_MON_2 -> "2"
+        Ability.ANTI_DAE_4 -> "4"
+        Ability.ANTI_DAE_3 -> "3"
+        Ability.ANTI_DAE_2 -> "2"
+        Ability.ANTI_PSY_4 -> "4"
+        Ability.ANTI_PSY_3 -> "3"
+        Ability.ANTI_PSY_2 -> "2"
+        Ability.MELTA_2 -> "2"
+        Ability.MELTA_4 -> "4"
+        Ability.MELTA_6 -> "6"
+        Ability.MELTA_D3 -> "d3"
+        else -> ""
     }
 }
