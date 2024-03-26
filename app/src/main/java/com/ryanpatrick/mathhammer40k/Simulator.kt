@@ -161,6 +161,7 @@ class Simulator {
             var hitRoll: Int
             var numHits: Int
             var weapon: Weapon
+            var criticalHit = 6
             val hitWeaponsList = mutableListOf<Int>()
 
             for(i in 0..<attackerWeapons.count()){
@@ -258,7 +259,8 @@ class Simulator {
         }
 
         private fun checkIfWounded(roll: Int, strength: Int, toughness: Int, modifier: Int): Boolean {
-            if(roll == 6){
+            var criticalWound = 6
+            if(roll == criticalWound){
                 return true
             }
             if(roll == 1){

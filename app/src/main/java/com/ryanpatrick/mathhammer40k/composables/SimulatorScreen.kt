@@ -56,6 +56,7 @@ import com.ryanpatrick.mathhammer40k.data.Ability
 import com.ryanpatrick.mathhammer40k.data.GlobalEffects
 import com.ryanpatrick.mathhammer40k.data.Profile
 import com.ryanpatrick.mathhammer40k.data.Weapon
+import com.ryanpatrick.mathhammer40k.data.effect
 import com.ryanpatrick.mathhammer40k.data.title
 import com.ryanpatrick.mathhammer40k.viewmodel.ProfileViewModel
 
@@ -405,7 +406,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                     }){
                         Text(text = "Confirm")
                     }
-                    Button(onClick = { showAttackerDialog.value = false }){
+                    Button(onClick = { showAbilityDialog.value = false }){
                         Text(text = "Cancel")
                     }
                 }},
@@ -417,7 +418,7 @@ fun SimulatorScreen(profileViewModel: ProfileViewModel){
                             trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(abilitiesDropdwonExpanded.value)})
                         ExposedDropdownMenu(expanded = abilitiesDropdwonExpanded.value, onDismissRequest = {abilitiesDropdwonExpanded.value = false}){
                             Ability.entries.forEach { ability ->
-                                DropdownMenuItem(text = {Text(ability.title)},
+                                DropdownMenuItem(text = {Text(if(ability.title == "") ability.effect else ability.title)},
                                     onClick = {
                                         selectedAbility.value = ability
                                         abilitiesDropdwonExpanded.value = false

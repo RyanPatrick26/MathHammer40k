@@ -6,7 +6,7 @@ enum class Ability{
     ANTI_CHAR_4, ANTI_CHAR_3, ANTI_CHAR_2, ANTI_VEH_4, ANTI_VEH_3, ANTI_VEH_2, ANTI_FLY_4, ANTI_FLY_3, ANTI_FLY_2,
     ANTI_WALK_4, ANTI_WALK_3, ANTI_WALK_2, ANTI_MON_4, ANTI_MON_3, ANTI_MON_2, ANTI_DAE_4, ANTI_DAE_3, ANTI_DAE_2,
     ANTI_PSY_4, ANTI_PSY_3, ANTI_PSY_2, MELTA_2, MELTA_4, MELTA_6, MELTA_D3, REROLL_1S_HIT, REROLL_MISSES, HITS_FISH,
-    REROLL_1S_WOUND, REROLL_WOUNDS, WOUNDS_FISH
+    REROLL_1S_WOUND, REROLL_WOUNDS, WOUNDS_FISH, CRIT_HIT_5S, CRIT_HIT_4S
 }
 
 val Ability.title: String get(){
@@ -110,6 +110,8 @@ val Ability.effect: String get(){
         Ability.REROLL_1S_WOUND -> "Re-roll all wound rolls of 1"
         Ability.REROLL_WOUNDS -> "Re-roll all failed wounds"
         Ability.WOUNDS_FISH -> "Re-roll all wounds that didn't crit"
+        Ability.CRIT_HIT_5S -> "Unmodified hit roll of 5+ is a crit"
+        Ability.CRIT_HIT_4S -> "Unmodified hit roll of 4+ is a crit"
     }
 }
 
@@ -151,6 +153,8 @@ val Ability.effectValue: String get(){
         Ability.MELTA_4 -> "4"
         Ability.MELTA_6 -> "6"
         Ability.MELTA_D3 -> "d3"
+        Ability.CRIT_HIT_5S -> "5"
+        Ability.CRIT_HIT_4S -> "4"
         else -> ""
     }
 }
